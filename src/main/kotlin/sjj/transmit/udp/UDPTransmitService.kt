@@ -36,6 +36,8 @@ class UDPTransmitService {
                         val len = conn.readDataBlock(readBuf)
                         if (len > 0) {
                             publish.onNext(Arrays.copyOf(readBuf, len))
+                        } else {
+                            Thread.sleep(10)
                         }
                     }
                 } catch (e: Exception) {

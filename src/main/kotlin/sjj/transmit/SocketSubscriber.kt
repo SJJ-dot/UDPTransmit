@@ -9,7 +9,6 @@ import kotlin.concurrent.thread
 class SocketSubscriber(private var accept: Socket?, private val send: (ByteArray) -> Unit) : FlowableSubscriber<ByteArray> {
     private var sendT: Thread? = null
     override fun onNext(t: ByteArray?) {
-        println("data $t")
         accept?.getOutputStream()?.write(t)
     }
 
@@ -40,7 +39,10 @@ class SocketSubscriber(private var accept: Socket?, private val send: (ByteArray
                 try {
                     val read = input.read(buf)
                     if (read > 0) {
+//                        println("length $read")
                         send(Arrays.copyOf(buf, read))
+                    } else {
+                        Thread.sleep(10)
                     }
                 } catch (e: Exception) {
 
