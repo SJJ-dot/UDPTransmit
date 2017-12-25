@@ -1,7 +1,9 @@
 package sjj.transmit
 
 import io.reactivex.Flowable
+import io.reactivex.FlowableSubscriber
 import io.reactivex.schedulers.Schedulers
+import org.reactivestreams.Subscription
 import sjj.transmit.udp.UDPTransmitService
 import java.net.ServerSocket
 import kotlin.concurrent.thread

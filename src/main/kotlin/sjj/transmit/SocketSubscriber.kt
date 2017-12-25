@@ -47,5 +47,6 @@ class SocketSubscriber(private var accept: Socket?, private val send: (ByteArray
                 }
             }
         }
+        s.request(Long.MAX_VALUE)
     }
 }
