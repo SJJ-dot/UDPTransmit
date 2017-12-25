@@ -26,8 +26,8 @@ class UDPTransmitService {
                         while (true) {
                             try {
                                 conn.sendBuffer(queue.take())
-                                Thread.sleep(10)
                             } catch (e: Exception) {
+                                e.printStackTrace()
                             }
                         }
                     }
@@ -59,7 +59,7 @@ class UDPTransmitService {
     }
 
     fun push(byteArray: ByteArray) {
-        if (status.get() == ConnectState.DISCONNECT) {
+        if (status.get() != ConnectState.DISCONNECT) {
             queue.offer(byteArray)
         }
     }

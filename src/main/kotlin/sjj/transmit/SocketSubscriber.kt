@@ -8,25 +8,23 @@ import kotlin.concurrent.thread
 
 class SocketSubscriber(private var accept: Socket?, private val send: (ByteArray) -> Unit) : FlowableSubscriber<ByteArray> {
     private var sendT: Thread? = null
+    private var s: Subscription? = null
     override fun onNext(t: ByteArray?) {
-        accept?.getOutputStream()?.write(t)
+        try {
+            accept?.getOutputStream()?.write(t)
+        } catch (e: Exception) {
+            disConnect()
+        }
     }
 
     override fun onComplete() {
         println("onComplete")
-        accept?.close()
-        accept = null
-        sendT?.interrupt()
-        sendT = null
+        disConnect()
     }
 
     override fun onError(t: Throwable?) {
         println("onError")
-        t?.printStackTrace()
-        accept?.close()
-        accept = null
-        sendT?.interrupt()
-        sendT = null
+        disConnect()
     }
 
     override fun onSubscribe(s: Subscription) {
@@ -50,5 +48,17 @@ class SocketSubscriber(private var accept: Socket?, private val send: (ByteArray
             }
         }
         s.request(Long.MAX_VALUE)
+    }
+    @Synchronized
+    private fun disConnect() {
+        try {
+            accept?.close()
+            accept = null
+            sendT?.interrupt()
+            sendT = null
+        } finally {
+            s?.cancel()
+            s =null
+        }
     }
 }

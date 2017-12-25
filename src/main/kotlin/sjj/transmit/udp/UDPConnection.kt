@@ -27,7 +27,7 @@ class UDPConnection : ConnectInterface {
 
     override fun sendBuffer(buffer: ByteArray) {
         send.data = buffer
-        conn?.send(send)
+        conn!!.send(send)
     }
 
     override fun closeConnection() {
