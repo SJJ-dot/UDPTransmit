@@ -1,6 +1,7 @@
 package sjj.transmit
 
 import io.reactivex.Flowable
+import io.reactivex.schedulers.Schedulers
 import sjj.transmit.udp.UDPTransmitService
 import java.net.ServerSocket
 import kotlin.concurrent.thread
@@ -14,7 +15,7 @@ class SocketTransmitService() {
         while (true) {
             val accept = socket.accept()
             println("客户端接入：${accept.remoteSocketAddress}")
-            service.publish.subscribe(SocketSubscriber(accept) {
+            service.publish.observeOn(Schedulers.newThread()).onBackpressureLatest().subscribe(SocketSubscriber(accept) {
                 service.push(it)
             })
         }
