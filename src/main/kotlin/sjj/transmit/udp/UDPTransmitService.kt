@@ -5,12 +5,15 @@ import io.reactivex.processors.PublishProcessor
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.ConcurrentMap
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.concurrent.thread
 
 class UDPTransmitService {
-    val publish = PublishProcessor.create<ByteArray>().toSerialized()
+    val listener = mutableListOf<(ByteArray)->Unit>()
     private val conn: ConnectInterface = UDPConnection()
     private var status = AtomicReference<ConnectState>(ConnectState.DISCONNECT)
     private val queue = LinkedBlockingQueue<ByteArray>()
@@ -27,7 +30,7 @@ class UDPTransmitService {
                             try {
                                 conn.sendBuffer(queue.take())
                             } catch (e: Exception) {
-                                e.printStackTrace()
+//                                e.printStackTrace()
                             }
                         }
                     }
@@ -35,13 +38,18 @@ class UDPTransmitService {
                     while (true) {
                         val len = conn.readDataBlock(readBuf)
                         if (len > 0) {
-                            publish.onNext(Arrays.copyOf(readBuf, len))
+                            synchronized(listener) {
+                                val bytes = Arrays.copyOf(readBuf, len)
+                                listener.forEach { it(bytes) }
+                            }
                         } else {
                             Thread.sleep(10)
                         }
                     }
                 } catch (e: Exception) {
-
+//                    println("ex")
+                    println("aaa")
+                    e.printStackTrace()
                 } finally {
                     sendThread?.interrupt()
                     disconnect()

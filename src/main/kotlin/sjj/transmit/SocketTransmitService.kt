@@ -16,10 +16,10 @@ class SocketTransmitService() {
         service.connect()
         while (true) {
             val accept = socket.accept()
-            println("客户端接入：${accept.remoteSocketAddress} ${service.publish.hasSubscribers()}" )
-            service.publish.observeOn(Schedulers.computation()).onBackpressureBuffer().subscribe(SocketSubscriber(accept) {
+            println("客户端接入：${accept.remoteSocketAddress} ${service.listener.size}" )
+            SocketSubscriber(accept, service.listener) {
                 service.push(it)
-            })
+            }
         }
     }
 }
