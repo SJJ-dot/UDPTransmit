@@ -28,7 +28,7 @@ class SocketSubscriber(private var accept: Socket?, private val send: (ByteArray
     }
 
     override fun onSubscribe(s: Subscription) {
-        println("onSubscribe")
+        this.s = s
         sendT?.interrupt()
         sendT = thread {
             val input = accept?.getInputStream() ?: return@thread
@@ -58,6 +58,7 @@ class SocketSubscriber(private var accept: Socket?, private val send: (ByteArray
             sendT = null
         } finally {
             s?.cancel()
+            println("连接已断开：$s")
             s =null
         }
     }
