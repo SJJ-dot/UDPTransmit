@@ -3,13 +3,26 @@ package test
 import java.net.InetSocketAddress
 import java.net.Socket
 import java.net.SocketAddress
+import kotlin.concurrent.thread
 
 fun main(args: Array<String>) {
-    val socket = Socket()
-    socket.connect(InetSocketAddress("127.0.0.1", 6789))
-    val buf = ByteArray(4096)
-    do {
-        val len = socket.getInputStream().read(buf)
-        println("读取数据长度：$len")
-    } while (len > 0)
+    var i = 0
+    while (true) {
+        newThreadTest(i++)
+    }
+}
+
+fun newThreadTest(int: Int = 0) {
+    val t = thread {
+        while (true) {
+            try {
+                println("aaaaaa  $int")
+                Thread.sleep(100)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+    Thread.sleep(1000)
+    t.stop()
 }
