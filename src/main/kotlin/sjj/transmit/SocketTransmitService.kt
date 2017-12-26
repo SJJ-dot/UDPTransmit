@@ -16,7 +16,7 @@ class SocketTransmitService() {
         service.connect()
         while (true) {
             val accept = socket.accept()
-            println("客户端接入：${accept.remoteSocketAddress}")
+            println("客户端接入：${accept.remoteSocketAddress} ${service.publish.hasSubscribers()}" )
             service.publish.observeOn(Schedulers.computation()).onBackpressureBuffer().subscribe(SocketSubscriber(accept) {
                 service.push(it)
             })
