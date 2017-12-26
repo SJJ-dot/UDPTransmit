@@ -22,8 +22,9 @@ class UDPTransmitService {
                 var sendThread: Thread? = null
                 try {
                     conn.openConnection()
+                    status.lazySet(ConnectState.CONNECT)
                     sendThread = thread {
-                        while (true) {
+                        while (status.get() != ConnectState.DISCONNECT) {
                             try {
                                 conn.sendBuffer(queue.take())
                             } catch (e: Exception) {
@@ -32,7 +33,7 @@ class UDPTransmitService {
                         }
                     }
                     val readBuf = ByteArray(4096)
-                    while (true) {
+                    while (status.get() != ConnectState.DISCONNECT) {
                         val len = conn.readDataBlock(readBuf)
                         if (len > 0) {
                             publish.onNext(Arrays.copyOf(readBuf, len))
@@ -40,8 +41,6 @@ class UDPTransmitService {
                             Thread.sleep(10)
                         }
                     }
-                } catch (e: Exception) {
-
                 } finally {
                     sendThread?.interrupt()
                     disconnect()
@@ -54,6 +53,7 @@ class UDPTransmitService {
         if (status.get() == ConnectState.DISCONNECT) {
             return
         }
+        status.lazySet(ConnectState.DISCONNECT)
         connect?.interrupt()
         connect = null
     }
