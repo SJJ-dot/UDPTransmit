@@ -1,19 +1,18 @@
-package sjj.transmit.udp
+package sjj.transmit.connection.udp
 
+import sjj.transmit.connection.ConnectInterface
 import java.io.IOException
 import java.net.*
 
-class UDPConnection : ConnectInterface {
-    private val UDP_RECEIVE_PORT = 14550
+class UDPConnection(private val servicePort: Int = 14550) : ConnectInterface {
     private var receive: DatagramPacket = DatagramPacket(ByteArray(4096), 4096)
     private var send: DatagramPacket = DatagramPacket(byteArrayOf(0), 0)
     private var conn: DatagramSocket? = null
-    private var socketAddress: SocketAddress? = null
     private var address: InetAddress? = null
     private var port: Int = 0
     override fun openConnection() {
         conn?.close()
-        conn = DatagramSocket(UDP_RECEIVE_PORT)
+        conn = DatagramSocket(servicePort)
     }
 
     override fun readDataBlock(buffer: ByteArray): Int {
