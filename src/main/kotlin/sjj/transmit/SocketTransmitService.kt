@@ -1,6 +1,8 @@
 package sjj.transmit
 
 import io.reactivex.schedulers.Schedulers
+import sjj.transmit.connection.ConnectState
+import sjj.transmit.utils.Timer
 import java.net.ServerSocket
 
 class SocketTransmitService(private val service: TransmitService = TransmitService()) {
@@ -8,6 +10,13 @@ class SocketTransmitService(private val service: TransmitService = TransmitServi
     fun start() {
         println("服务端IP:${socket.localSocketAddress}")
         service.connect()
+        service.publish.ofType(ConnectState::class.java).subscribe({
+            if (it == ConnectState.DISCONNECT) {
+                Timer {
+                    service.connect()
+                }.start(2000)
+            }
+        }, ::println)
         while (true) {
             val accept = socket.accept()
             println("客户端接入：${accept.remoteSocketAddress} ${service.publish.hasSubscribers()}")

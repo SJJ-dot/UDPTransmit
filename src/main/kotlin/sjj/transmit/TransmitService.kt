@@ -26,11 +26,12 @@ class TransmitService(private val conn: ConnectInterface = UDPConnection()) {
                     status.lazySet(ConnectState.CONNECTED)
                     publish.onNext(ConnectState.CONNECTED)
                     sendThread = thread {
-                        while (status.get() != ConnectState.DISCONNECT) {
-                            try {
+                        try {
+                            while (status.get() != ConnectState.DISCONNECT) {
                                 conn.sendBuffer(queue.take())
-                            } catch (e: Exception) {
                             }
+                        } catch (e: Exception) {
+                            disconnect()
                         }
                     }
                     val readBuf = ByteArray(4096)
@@ -41,24 +42,22 @@ class TransmitService(private val conn: ConnectInterface = UDPConnection()) {
                         }
                     }
                 } finally {
+                    println("disconnect")
                     sendThread?.interrupt()
-                    val state = status.get()
                     disconnect()
-                    if (state != ConnectState.DISCONNECT) {
-                        Thread.sleep(1000)
-                        connect()
-                    }
                 }
             }
         }
     }
 
     fun disconnect() {
+        println(status)
         if (status.get() == ConnectState.DISCONNECT) {
             return
         }
         status.lazySet(ConnectState.DISCONNECT)
         publish.onNext(ConnectState.DISCONNECT)
+        println(status)
         connect?.interrupt()
         connect = null
     }

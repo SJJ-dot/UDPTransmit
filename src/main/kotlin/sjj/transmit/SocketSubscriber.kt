@@ -31,16 +31,20 @@ class SocketSubscriber(private var accept: Socket?, private val send: (ByteArray
     override fun onSubscribe(s: Subscription) {
         this.s = s
         sendT = thread {
-            val input = accept?.getInputStream() ?: return@thread
-            val buf = ByteArray(4096)
-            while (alive) {
-                val read = input.read(buf)
-                if (read > 0) {
-//                        println("length $read")
-                    send(Arrays.copyOf(buf, read))
-                } else {
-                    Thread.sleep(10)
+            try {
+                val input = accept?.getInputStream() ?: return@thread
+                val buf = ByteArray(4096)
+                while (alive) {
+                    val read = input.read(buf)
+                    if (read > 0) {
+                        //                        println("length $read")
+                        send(Arrays.copyOf(buf, read))
+                    } else {
+                        Thread.sleep(10)
+                    }
                 }
+            } catch (e: Exception) {
+                disConnect()
             }
         }
         s.request(Long.MAX_VALUE)
@@ -49,6 +53,7 @@ class SocketSubscriber(private var accept: Socket?, private val send: (ByteArray
     @Synchronized
     private fun disConnect() {
         try {
+            println("连接已断开：${accept?.remoteSocketAddress}")
             accept?.close()
             accept = null
             sendT?.interrupt()
@@ -56,7 +61,6 @@ class SocketSubscriber(private var accept: Socket?, private val send: (ByteArray
         } finally {
             alive = false
             s?.cancel()
-            println("连接已断开：$s")
             s = null
         }
     }
