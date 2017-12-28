@@ -39,10 +39,12 @@ class TransmitService(private val conn: ConnectInterface = UDPConnection()) {
                         val len = conn.readDataBlock(readBuf)
                         if (len > 0) {
                             publish.onNext(Arrays.copyOf(readBuf, len))
+                        }else {
+                            //socket is close
+                            break
                         }
                     }
                 } finally {
-                    println("disconnect")
                     sendThread?.interrupt()
                     disconnect()
                 }
