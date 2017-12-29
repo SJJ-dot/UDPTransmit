@@ -6,13 +6,13 @@ import java.net.Socket
 import java.util.*
 import kotlin.concurrent.thread
 
-class SocketSubscriber(private var accept: Socket?, private val send: (ByteArray) -> Unit) : FlowableSubscriber<ByteArray> {
+class SocketSubscriber(private var accept: Socket, private val send: (ByteArray) -> Unit) : FlowableSubscriber<ByteArray> {
     private var alive = true
     private var sendT: Thread? = null
     private var s: Subscription? = null
     override fun onNext(t: ByteArray?) {
         try {
-            accept?.getOutputStream()?.write(t)
+            accept.getOutputStream()?.write(t)
         } catch (e: Exception) {
             disConnect()
         }
@@ -30,9 +30,10 @@ class SocketSubscriber(private var accept: Socket?, private val send: (ByteArray
 
     override fun onSubscribe(s: Subscription) {
         this.s = s
+
         sendT = thread {
             try {
-                val input = accept?.getInputStream() ?: return@thread
+                val input = accept.getInputStream() ?: return@thread
                 val buf = ByteArray(4096)
                 while (alive) {
                     val read = input.read(buf)
@@ -40,10 +41,10 @@ class SocketSubscriber(private var accept: Socket?, private val send: (ByteArray
                         //                        println("length $read")
                         send(Arrays.copyOf(buf, read))
                     } else {
-                        Thread.sleep(10)
+                       break
                     }
                 }
-            } catch (e: Exception) {
+            }finally {
                 disConnect()
             }
         }
@@ -53,9 +54,8 @@ class SocketSubscriber(private var accept: Socket?, private val send: (ByteArray
     @Synchronized
     private fun disConnect() {
         try {
-            println("连接已断开：${accept?.remoteSocketAddress}")
-            accept?.close()
-            accept = null
+            println("连接已断开：${accept.remoteSocketAddress}")
+            accept.close()
             sendT?.interrupt()
             sendT = null
         } finally {

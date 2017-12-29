@@ -44,6 +44,8 @@ class TransmitService(private val conn: ConnectInterface = UDPConnection()) {
                             break
                         }
                     }
+                } catch (e: Exception) {
+
                 } finally {
                     sendThread?.interrupt()
                     disconnect()
