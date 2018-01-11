@@ -1,5 +1,7 @@
 package sjj.transmit
 
+import com.MAVLink.Parser
+import com.MAVLink.common.msg_statustext
 import io.reactivex.processors.PublishProcessor
 import sjj.transmit.connection.ConnectInterface
 import sjj.transmit.connection.ConnectState
@@ -35,11 +37,19 @@ class TransmitService(private val conn: ConnectInterface = UDPConnection()) {
                         }
                     }
                     val readBuf = ByteArray(4096)
+                    val parser = Parser()
                     while (status.get() != ConnectState.DISCONNECT) {
                         val len = conn.readDataBlock(readBuf)
                         if (len > 0) {
+                            (0 until len).mapNotNull { parser.mavlink_parse_char(readBuf[it].toInt() and 0xff) }
+                                    .forEach {
+                                        if (it.msgid == msg_statustext.MAVLINK_MSG_ID_STATUSTEXT) {
+                                            val unpack:msg_statustext = it.unpack() as msg_statustext
+                                            System.err.println("${unpack.getText()}  ${unpack.warning}")
+                                        }
+                                    }
                             publish.onNext(Arrays.copyOf(readBuf, len))
-                        }else {
+                        } else {
                             //socket is close
                             break
                         }
