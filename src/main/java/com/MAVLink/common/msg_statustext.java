@@ -142,7 +142,7 @@ public class msg_statustext extends MAVLinkMessage {
 
             return MAV_ERROR_SUBSYSTEM.valueOf(Short.parseShort(group)).des + " " + MAV_ERROR_CODE.valueOf(Short.parseShort(group1)).des;
         }
-        return getText();
+        return "";
     }
 
     enum MAV_ERROR_SUBSYSTEM {
