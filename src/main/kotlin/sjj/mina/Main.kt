@@ -33,22 +33,18 @@ fun main(args: Array<String>) {
     client.setFilters(LoggingFilter("NioTcpClient"))
     client.ioHandler = object : AbstractIoHandler() {
         override fun sessionOpened(session: IoSession?) {
-            println("sessionOpened ${session?.hashCode()}")
         }
 
         override fun messageReceived(session: IoSession?, message: Any?) {
-            println("sessionSize ${acceptor.managedSessions.size}")
             acceptor.managedSessions.values.forEach {
                 it.write(message)
             }
         }
 
         override fun messageSent(session: IoSession?, message: Any?) {
-//            println("messageSent")
         }
 
         override fun sessionClosed(session: IoSession?) {
-            println("sessionClosed   ${session?.hashCode()}")
         }
     }
 
