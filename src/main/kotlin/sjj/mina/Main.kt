@@ -44,7 +44,7 @@ fun main(args: Array<String>) {
     }
 
 
-    val socketAddress = if (args.size>1) InetSocketAddress(args[0],args[1].toInt()) else InetSocketAddress("192.168.2.229", 5760)
+    val socketAddress = if (args.size>1) InetSocketAddress(args[0],args[1].toInt()) else InetSocketAddress("localhost", 5760)
 
     while (true) {
         val future = client.connect(socketAddress)
