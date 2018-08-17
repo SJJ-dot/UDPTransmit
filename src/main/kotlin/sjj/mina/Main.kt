@@ -20,6 +20,10 @@ fun main(args: Array<String>) {
         override fun messageReceived(session: IoSession?, message: Any?) {
             clientSession?.write(message)
         }
+
+        override fun sessionClosed(session: IoSession?) {
+            println("sessionClosed ${session?.remoteAddress}")
+        }
     }
     try {
         val address = InetSocketAddress(6789)
@@ -32,24 +36,15 @@ fun main(args: Array<String>) {
     val client = NioTcpClient()
     client.setFilters(LoggingFilter("NioTcpClient"))
     client.ioHandler = object : AbstractIoHandler() {
-        override fun sessionOpened(session: IoSession?) {
-        }
-
         override fun messageReceived(session: IoSession?, message: Any?) {
             acceptor.managedSessions.values.forEach {
                 it.write(message)
             }
         }
-
-        override fun messageSent(session: IoSession?, message: Any?) {
-        }
-
-        override fun sessionClosed(session: IoSession?) {
-        }
     }
 
 
-    val socketAddress = if (args.size>1) InetSocketAddress(args[0],args[1].toInt()) else InetSocketAddress("localhost", 5760)
+    val socketAddress = if (args.size>1) InetSocketAddress(args[0],args[1].toInt()) else InetSocketAddress("192.168.2.229", 5760)
 
     while (true) {
         val future = client.connect(socketAddress)
@@ -65,7 +60,7 @@ fun main(args: Array<String>) {
 //            })
             val session = future.get()
             clientSession = session
-            println("CONNECT COMPLETE ${session.remoteAddress}   ${session?.hashCode()}")
+            println("CONNECT COMPLETE  remoteAddress: ${session.remoteAddress} localAddress: ${session?.localAddress}")
             while (!session.isClosing) {
                 Thread.sleep(500)
             }
